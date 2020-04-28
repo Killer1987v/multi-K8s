@@ -1,0 +1,36 @@
+#one single configuration file for both deployment and service.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: multi-server
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      name: multi-K8s-server    
+  template:
+    metadata:
+      labels:
+        name: multi-K8s-server
+    spec:
+      containers:
+        - name: multi-server-container
+          image: stephengrider/multi-server
+          resources:
+              limits:
+                memory: "50Mi"
+                cpu: "50m"
+          ports:
+            - containerPort: 5000
+--- #to separate two configurations, three dashes are must
+appVersion: v1
+kind: Service
+metadata:
+  name: service-cluster-ip-service
+spec:
+  type: ClusterIP
+  selector:
+    name: multi-K8s-server
+  ports:
+    - port: 5000
+      targetPort: 5000

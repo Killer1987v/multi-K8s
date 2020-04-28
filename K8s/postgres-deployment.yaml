@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: multi-postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: multi-K8s-postgres
+  template:
+    metadata:
+      labels:
+        name: multi-K8s-postgres
+    spec:
+      volumes:
+        - name: postgres-storage
+          persistentVolumeClaim:
+              claimName: database-persistent-volume-claim #name of PVC that we configured
+      containers:
+        - name: multi-postgres-container
+          image: postgres
+          resources:
+            limits:
+              memory: "50Mi"
+              cpu: "50m"
+          ports:
+          - containerPort: 5432
+          volumeMounts:
+            - name: postgres-storage
+              mountPath: /var/lib/postgresql/data #get the data from this path to be copied to PV storage
+              subPath: postgres #this is specific for postgres and this will have separate folder called 'postgres' in PV storage
+          env:
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef: 
+                  name: pgpassword
+                  key: POSTGRES_PASSWORD

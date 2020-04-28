@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: multi-redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: multi-K8s-redis
+  template:
+    metadata:
+      labels:
+        name: multi-K8s-redis
+    spec:
+      containers:
+        - name: multi-redis-container
+          image: redis
+          resources:
+            limits:
+              memory: "50Mi"
+              cpu: "50m"
+          ports:
+          - containerPort: 6379

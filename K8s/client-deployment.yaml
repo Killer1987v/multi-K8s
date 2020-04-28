@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: multi-client
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      name: multi-K8s-client
+  template:
+    metadata:
+      labels:
+        name: multi-K8s-client
+    spec:
+      containers:
+       - name: multi-client-container
+         image: stephengrider/multi-client
+         resources:
+           limits:
+              memory: "50Mi"
+              cpu: "50m"
+         ports:
+          - containerPort: 3000

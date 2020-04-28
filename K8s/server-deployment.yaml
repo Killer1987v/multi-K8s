@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: multi-server
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      name: multi-K8s-server    
+  template:
+    metadata:
+      labels:
+        name: multi-K8s-server
+    spec:
+      containers:
+        - name: multi-server-container
+          image: stephengrider/multi-server
+          resources:
+              limits:
+                memory: "50Mi"
+                cpu: "50m"
+          ports:
+            - containerPort: 5000
+          env:
+            - name: REDIS_HOST  #given in keys.js defined in server folder
+              value: redis-cluster-ip-service
+            - name: REDIS_PORT  #given in keys.js defined in server folder
+              value: "6379"
+            - name: PGUSER  #given in keys.js defined in server folder
+              value: postgres
+            - name: PGHOST  #given in keys.js defined in server folder
+              value: postgres-cluster-ip-service
+            - name: PGDATABASE  #given in keys.js defined in server folder
+              value: postgres
+            - name: PGPORT  #given in keys.js defined in server folder
+              value: "5432"
+            - name: PGPASSWORD #given in keys.js defined in server folder
+              valueFrom:
+                secretKeyRef:
+                  name: pgpassword
+                  key: POSTGRES_PASSWORD
