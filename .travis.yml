@@ -1,0 +1,29 @@
+sudo: required
+services:
+  - docker
+env:
+  global:
+    - SHA=$(git rev-parse head) #to get the SHA id of the latest commit
+    - CLOUDSDK_CORE_DISABLE_PROMPTS=1 #to disable any prompts from google cloud while authorizing the account
+before_install:
+  - openssl aes-256-cbc -K $encrypted_9f3b5599b056_key -iv $encrypted_9f3b5599b056_iv -in service-account.json.enc -out service-account.json -d
+  #above command will take the encrypt file and decrypt and put it in the project directory folder
+  - curl https://sdk.cloud.google.com | bash > /dev/null; #install cloud sdk
+  - source $HOME/google-cloud-sdk/path.bash.inc
+  - gcloud components update kubectl #installing kubectl in cloud sdk
+  - gcloud auth activate-service-account --key-file service-account.json #this will authenticate to gcloud with service-account.json key
+  - gcloud config set project multi-k8s-275611 # to specify the particular project in gcloud
+  - gcloud config set compute/zone us-central1-c
+  - gcloud container clusters get-credentials multi-k8s
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker build -t killer1987v/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run killer1987v/react-test npm test -- --coverage
+
+deploy:
+  provider: script #usually we give cloud provider here. but for kubernetes Travis doesn't have any pre-installed program/plugin so we need to manually create the script to ask travis to deploy into kubernetes
+  script: bash ./deploy.sh #instructing travis to run deploy.sh script in the current folder
+  on:
+    branch: master
+
