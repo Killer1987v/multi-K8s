@@ -35,7 +35,4 @@ spec:
             - name: PGPORT  #given in keys.js defined in server folder
               value: "5432"
             - name: PGPASSWORD #given in keys.js defined in server folder
-              valueFrom:
-                secretKeyRef:
-                  name: pgpassword
-                  key: POSTGRES_PASSWORD
+              value: postgres_password
