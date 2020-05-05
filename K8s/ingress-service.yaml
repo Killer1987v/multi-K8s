@@ -5,9 +5,28 @@ metadata:
   annotations:
     kubernetes.io/ingress.class: nginx # this is to instruct kubernetes to create a ingress controller using this particular class
     nginx.ingress.kubernetes.io/rewrite-target: /$1 #this is to rewrite the target link (/api) to "/" so that server can take and process
+    cert-manager.io/cluster-issuer: "letsencrypt-prod" # to configure the issuer to get the certificate
+    nginx.ingress.kubernetes.io/ssl-redirect: 'true' # to redirect all the requests to HTTPs
 spec:
+  tls:
+    - hosts: #domain names
+        - multi-k8s-killer.org
+        - www.multi-k8s-killer.org
+      secretName: multi-k8s-killer-org
   rules:
-    - http:
+    - host: multi-k8s-killer.org #two hosts for each domain
+      http:
+        paths:
+          - path: /?(.*) #to route the incoming request, if we receive any request iwth "/"(other than /api), then route it to client-cluster-ip-service
+            backend:
+              serviceName: client-cluster-ip-service
+              servicePort: 3000
+          - path: /api/?(.*) #if we receive any request with /api, then route it to server-cluster-ip-service
+            backend:
+              serviceName: server-cluster-ip-service
+              servicePort: 5000
+    - host: www.multi-k8s-killer.org
+      http:
         paths:
           - path: /?(.*) #to route the incoming request, if we receive any request iwth "/"(other than /api), then route it to client-cluster-ip-service
             backend:
